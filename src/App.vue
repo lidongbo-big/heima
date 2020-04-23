@@ -1,13 +1,17 @@
 <template>
   <div id="app">
-      黑马牛逼
-    <router-view/>
+  <router-view/>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  data () {
+    return {}
+  },
+  methods: {},
+  created () {}
 }
 </script>
 
