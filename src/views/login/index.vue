@@ -1,15 +1,10 @@
 <template>
   <div class="login-container">
-    <!--
-      el-form 表单组件
-      每个表单项都必须使用 el-form-item 组件包裹
-     -->
-
     <div class="login-form-wrap">
       <div class="login-head">
         <div class="logo"></div>
       </div>
-      <el-form :rules="formRules" class="login-form" ref="form" :model="user">
+      <el-form :rules="formRules" class="login-form" ref="login-form" :model="user">
         <el-form-item prop="mobile">
           <el-input
             v-model="user.mobile"
@@ -22,8 +17,8 @@
             placeholder="请输入验证码"
           ></el-input>
         </el-form-item>
-        <el-form-item>
-          <el-checkbox v-model="checked">我已阅读并同意用户协议和隐私条款</el-checkbox>
+        <el-form-item prop="agree">
+          <el-checkbox v-model="user.agree">我已阅读并同意用户协议和隐私条款</el-checkbox>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -39,8 +34,8 @@
 </template>
 
 <script>
-import request from '@/utils/request'
 
+import { login } from '@/api/user'
 export default {
   name: 'LoginIndex',
   components: {},
@@ -49,9 +44,10 @@ export default {
     return {
       user: {
         mobile: '',
-        code: ''
+        code: '',
+        agree: false
       },
-      checked: false,
+      // checked: false,
       loginLoading: false,
       formRules: {
         mobile: [
@@ -61,6 +57,18 @@ export default {
         code: [
           { required: true, message: '验证码不能为空', trigger: 'change' },
           { pattern: /^\d{6}$/, message: '格式不正确', trigger: 'change' }
+        ],
+        agree: [
+          {
+            validator: (rule, value, callback) => {
+              if (value) {
+                callback()
+              } else {
+                callback(new Error('请同意用户协议'))
+              }
+            },
+            trigger: 'change'
+          }
         ]
       }
     }
@@ -71,22 +79,19 @@ export default {
   mounted () {},
   methods: {
     onLogin () {
-      // 获取表单数据（根据接口要求绑定数据）
-      const user = this.user
-
-      // 表单验证
-
-      // 验证通过，提交登录
-
-      // 开启登陆中 loading...
+      // 获取表单数据
+      // const user = this.user
+      this.$refs['login-form'].validate(valid => {
+        if (!valid) {
+          return
+        }
+        this.login()
+      })
+    },
+    login () {
       this.loginLoading = true
 
-      request({
-        method: 'POST',
-        url: '/mp/v1_0/authorizations',
-        // data 用来设置 POST 请求体
-        data: user
-      }).then(res => {
+      login(this.user).then(res => {
         console.log(res)
 
         // 登录成功
@@ -97,6 +102,12 @@ export default {
 
         // 关闭 loading
         this.loginLoading = false
+
+        window.localStorage.setItem('user', JSON.stringify(res.data.data))
+        // 跳转
+        this.$router.push({
+          name: 'home'
+        })
       }).catch(err => { // 登录失败
         console.log('登录失败', err)
         this.$message.error('登录失败，手机号或验证码错误')
@@ -105,6 +116,7 @@ export default {
         this.loginLoading = false
       })
     }
+
   }
 }
 </script>
