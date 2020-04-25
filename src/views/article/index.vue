@@ -9,19 +9,19 @@
         </div>
     <el-form ref="form" :model="form" label-width="40px" size="mini">
       <el-form-item label="状态">
-        <el-radio-group v-model="form.resource">
-          <el-radio label="全部"></el-radio>
-          <el-radio label="草稿"></el-radio>
-          <el-radio label="待审核"></el-radio>
-          <el-radio label="审核通过"></el-radio>
-          <el-radio label="审核失败"></el-radio>
-          <el-radio label="已删除"></el-radio>
+        <el-radio-group v-model="status">
+          <el-radio :label="null">全部</el-radio>
+          <el-radio :label="0">草稿</el-radio>
+          <el-radio :label="1">待审核</el-radio>
+          <el-radio :label="2">审核通过</el-radio>
+          <el-radio :label="3">审核失败</el-radio>
+          <el-radio :label="4">已删除</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="频道">
-        <el-select v-model="form.region" placeholder="请选择频道">
-          <el-option label="区域一" value="shanghai"></el-option>
-          <el-option label="区域二" value="beijing"></el-option>
+        <el-select v-model="channelId" placeholder="请选择频道">
+           <el-option label="全部" :value="null"></el-option>
+          <el-option :label="channel.name" :value="channel.id" v-for="(channel, index) in channels" :key="index"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="日期">
@@ -34,14 +34,14 @@
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="onSubmit">查询</el-button>
+        <el-button type="primary" @click="loadArticle(1)">查询</el-button>
       </el-form-item>
     </el-form>
     </el-card>
     <!-- 日期 -->
     <el-card class="box-card">
         <div slot="header" class="clearfix">
-           根据内容共查询到515条数据结果：
+           根据内容共查询到{{totalCount}}条数据结果：
         </div>
         <!-- 数据列表 -->
     <el-table
@@ -52,6 +52,10 @@
       <el-table-column
         prop="date"
         label="封面">
+        <template slot-scope="scope">
+          <img v-if="scope.row.cover.images[0]" class="atricle-cover" :src="scope.row.cover.images[0]" alt="">
+          <img v-else="" class="atricle-cover" src="./nohave.gif" alt="">
+        </template>
       </el-table-column>
       <el-table-column
         prop="title"
@@ -61,11 +65,7 @@
          <el-table-column
         label="状态">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.status === 0">草稿</el-tag>
-          <el-tag v-else-if="scope.row.status === 1">待审核</el-tag>
-          <el-tag v-else-if="scope.row.status === 2" type="success">审核通过</el-tag>
-          <el-tag v-else-if="scope.row.status === 3" type="danger">审核失败</el-tag>
-          <el-tag v-else-if="scope.row.status === 4" type="info">已删除</el-tag>
+          <el-tag :type="articleStatus[scope.row.status].type">{{ articleStatus [scope.row.status].text }}</el-tag>
         </template>
       </el-table-column>
          <el-table-column
@@ -93,14 +93,15 @@
     <el-pagination
     layout="prev, pager, next"
     background
-    :total="1000">
-    </el-pagination>
+    :total="totalCount"
+    :page-size="pageSize"
+    @current-change="onCurrentChange" />
     </el-card>
   </div>
 </template>
 
 <script>
-import { getArticles } from '@/api/article'
+import { getArticles, getArticlesChannels } from '@/api/article'
 export default {
   name: 'ArticleIndex',
   components: {},
@@ -117,40 +118,51 @@ export default {
         resource: '',
         desc: ''
       },
-      tableData: [{
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1517 弄'
-      }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1519 弄'
-      }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1516 弄'
-      }],
-      articles: []
+      articles: [],
+      articleStatus: [
+        { status: 1, text: '草稿', type: '' },
+        { status: 2, text: '待审核', type: 'warning' },
+        { status: 3, text: '审核通过', type: 'success' },
+        { status: 4, text: '审核失败', type: 'danger' },
+        { status: 5, text: '已删除', type: 'info' }
+      ],
+      totalCount: 0,
+      pageSize: 20,
+      status: null,
+      channels: [],
+      channelId: null
     }
   },
   computed: {},
   watch: {},
   created () {
-    this.loadArticle()
+    this.loadArticle(1)
+    this.loadChannels()
   },
   mounted () {},
   methods: {
-    loadArticle () {
-      getArticles().then(res => {
-        this.articles = res.data.data.results
+    loadArticle (page = 1) {
+      getArticles({
+        page,
+        per_page: this.pageSize,
+        status: this.status,
+        channel_id: this.channelId
+      }).then(res => {
+        const { results, total_count: totalCount } = res.data.data
+        this.articles = results
+        this.totalCount = totalCount
       })
     },
     onSubmit () {
       console.log('submit!')
+    },
+    onCurrentChange (page) {
+      this.loadArticle(page)
+    },
+    loadChannels () {
+      getArticlesChannels().then(res => {
+        this.channels = res.data.data.channels
+      })
     }
   }
 }
@@ -162,5 +174,9 @@ export default {
 }
 .list-table {
     margin-bottom: 20px;
+}
+.atricle-cover {
+  width: 60px;
+  background-size: cover;
 }
 </style>
