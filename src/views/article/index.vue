@@ -26,15 +26,17 @@
       </el-form-item>
       <el-form-item label="日期">
         <el-date-picker
-          v-model="form.date1"
+          v-model="rangeDate"
           type="datetimerange"
+          format="yyyy-MM-dd"
+          value-format="yyyy-MM-dd"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           :default-time="['12:00:00']"
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="loadArticle(1)">查询</el-button>
+        <el-button type="primary" @click="loadArticle(1)" :disabled = 'loading'>查询</el-button>
       </el-form-item>
     </el-form>
     </el-card>
@@ -45,6 +47,7 @@
         </div>
         <!-- 数据列表 -->
     <el-table
+      v-loading="loading"
       :data="articles"
       class="list-table"
       size="mini"
@@ -74,7 +77,7 @@
       </el-table-column>
       <el-table-column
         label="操作">
-        <template >
+        <template slot-scope="scope">
         <el-button
           size="mini"
           icon="el-icon-edit"
@@ -85,6 +88,7 @@
           type="danger"
           icon="el-icon-delete"
           circle
+          @click="onDeleteArticle(scope.row.id)"
         ></el-button>
       </template>
       </el-table-column>
@@ -94,14 +98,16 @@
     layout="prev, pager, next"
     background
     :total="totalCount"
+    :current-page.sync="page"
     :page-size="pageSize"
+    :disabled = 'loading'
     @current-change="onCurrentChange" />
     </el-card>
   </div>
 </template>
 
 <script>
-import { getArticles, getArticlesChannels } from '@/api/article'
+import { getArticles, getArticlesChannels, deleteArticle } from '@/api/article'
 export default {
   name: 'ArticleIndex',
   components: {},
@@ -127,10 +133,13 @@ export default {
         { status: 5, text: '已删除', type: 'info' }
       ],
       totalCount: 0,
-      pageSize: 20,
+      pageSize: 10,
       status: null,
       channels: [],
-      channelId: null
+      channelId: null,
+      rangeDate: [],
+      loading: true,
+      page: 1
     }
   },
   computed: {},
@@ -142,15 +151,19 @@ export default {
   mounted () {},
   methods: {
     loadArticle (page = 1) {
+      this.loading = true
       getArticles({
         page,
         per_page: this.pageSize,
         status: this.status,
-        channel_id: this.channelId
+        channel_id: this.channelId,
+        begin_pubdate: this.rangeDate ? this.rangeDate[0] : null,
+        end_pubdate: this.rangeDate ? this.rangeDate[1] : null
       }).then(res => {
         const { results, total_count: totalCount } = res.data.data
         this.articles = results
         this.totalCount = totalCount
+        this.loading = false
       })
     },
     onSubmit () {
@@ -162,6 +175,22 @@ export default {
     loadChannels () {
       getArticlesChannels().then(res => {
         this.channels = res.data.data.channels
+      })
+    },
+    onDeleteArticle (articleId) {
+      this.$confirm('确认删除？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteArticle(articleId.toString()).then(res => {
+          this.loadArticle(this.page)
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        })
       })
     }
   }
