@@ -94,18 +94,16 @@ export default {
   props: {},
   data () {
     return {
-      channels: [], // 文章频道列表
+      channels: [],
       article: {
-        title: '', // 文章标题
-        content: '', // 文章内容
-        cover: { // 文章封面
-          type: 0, // 封面类型 -1:自动，0-无图，1-1张，3-3张
-          images: [] // 封面图片的地址
+        title: '',
+        content: '',
+        cover: {
+          type: 0,
+          images: []
         },
         channel_id: null
       },
-      // 编辑器的 extensions
-      // 它们将会按照你声明的顺序被添加到菜单栏和气泡菜单中
       extensions: [
         new Doc(),
         new Text(),
@@ -113,26 +111,21 @@ export default {
         new Heading({ level: 3 }),
         new Bold({ bubble: true }), // 在气泡菜单中渲染菜单按钮
         new Image({
-          // 默认会把图片生成 base64 字符串和内容存储在一起，如果需要自定义图片上传
           uploadRequest (file) {
-            // 如果接口要求 Content-Type 是 multipart/form-data，则请求体必须使用 FormData
             const fd = new FormData()
             fd.append('image', file)
-            // 第1个 return 是返回 Promise 对象
-            // 为什么？因为 axios 本身就是返回 Promise 对象
             return uploadImage(fd).then(res => {
-              // 这个 return 是返回最后的结果
               return res.data.data.url
             })
-          } // 图片的上传方法，返回一个 Promise<url>
+          }
         }),
-        new Underline(), // 下划线
-        new Italic(), // 斜体
-        new Strike(), // 删除线
-        new HorizontalRule(), // 华丽的分割线
+        new Underline(),
+        new Italic(),
+        new Strike(),
+        new HorizontalRule(),
         new ListItem(),
-        new BulletList(), // 无序列表
-        new OrderedList(), // 有序列表
+        new BulletList(),
+        new OrderedList(),
         new TodoItem(),
         new TodoList(),
         new Fullscreen(),
@@ -146,7 +139,6 @@ export default {
           { min: 5, max: 30, message: '长度在 5 到 30 个字符', trigger: 'blur' }
         ],
         content: [
-          // { required: true, message: '请输入文章内容', trigger: 'change' }
           {
             validator (rule, value, callback) {
               console.log('content validator')
@@ -171,10 +163,6 @@ export default {
   watch: {},
   created () {
     this.loadChannels()
-
-    // 由于我们让发布和修改使用的同一个组件
-    // 所以这里要判断
-    // 如果路由路径参数中有 id，则请求展示文章内容
     if (this.$route.query.id) {
       this.loadArticle()
     }
@@ -189,51 +177,34 @@ export default {
 
     onPublish (draft = false) {
       this.$refs['publish-form'].validate(valid => {
-        // 验证失败，停止提交表单
         if (!valid) {
           return
         }
-
-        // 验证通过，提交表单
-        // 找到数据接口
-        // 封装请求方法
-        // 请求提交表单
-        // 如果是修改文章，则执行修改操作，否则执行添加操作
         const articleId = this.$route.query.id
         if (articleId) {
-          // 执行修改操作
           updateArticle(articleId, this.article, draft).then(res => {
             console.log(res)
             this.$message({
               message: `${draft ? '存入草稿' : '发布'}成功`,
               type: 'success'
             })
-            // 跳转到内容管理页面
             this.$router.push('/article')
           })
         } else {
           addArticle(this.article, draft).then(res => {
-            // 处理响应结果
-            // console.log(res)
             this.$message({
               message: `${draft ? '存入草稿' : '发布'}成功`,
               type: 'success'
             })
-            // 跳转到内容管理页面
             this.$router.push('/article')
           })
         }
       })
     },
 
-    // 修改文章：加载文章内容
     loadArticle () {
       console.log('loadArticle')
-      // 找到数据接口
-      // 封装请求方法
-      // 请求获取数据
       getArticle(this.$route.query.id).then(res => {
-        // 模板绑定展示
         this.article = res.data.data
       })
     }
