@@ -3,22 +3,54 @@ import request from '@/utils/request'
 
 export const getArticles = params => {
   return request({
-    methods: 'GET',
+    method: 'GET',
     url: '/mp/v1_0/articles',
     params
   })
 }
 // 获取
-export const getArticlesChannels = () => {
+export const getArticleChannels = () => {
   return request({
-    methods: 'GET',
+    method: 'GET',
     url: '/mp/v1_0/channels'
   })
 }
 // 删除
 export const deleteArticle = articleId => {
   return request({
-    methods: 'DELETE',
+    method: 'DELETE',
+    url: `/mp/v1_0/articles/${articleId}`
+  })
+}
+// 发表
+export const addArticle = (data, draft = false) => {
+  return request({
+    method: 'POST',
+    url: '/mp/v1_0/articles',
+    params: {
+      draft
+    },
+    data
+  })
+}
+
+export const updateArticle = (articleId, data, draft = false) => {
+  return request({
+    method: 'PUT',
+    url: `/mp/v1_0/articles/${articleId}`,
+    params: {
+      draft // 是否存为草稿（true 为草稿）
+    },
+    data
+  })
+}
+
+/**
+ * 获取指定文章
+ */
+export const getArticle = articleId => {
+  return request({
+    method: 'GET',
     url: `/mp/v1_0/articles/${articleId}`
   })
 }
