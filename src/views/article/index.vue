@@ -114,16 +114,6 @@ export default {
   props: {},
   data () {
     return {
-      form: {
-        name: '',
-        region: '',
-        date1: '',
-        date2: '',
-        delivery: false,
-        type: [],
-        resource: '',
-        desc: ''
-      },
       articles: [],
       articleStatus: [
         { status: 1, text: '草稿', type: '' },
