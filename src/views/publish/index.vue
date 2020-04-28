@@ -176,7 +176,6 @@ export default {
         if (!valid) {
           return
         }
-
         const articleId = this.$route.query.id
         if (articleId) {
           updateArticle(articleId, this.article, draft).then(res => {

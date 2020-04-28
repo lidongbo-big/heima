@@ -82,6 +82,7 @@
           size="mini"
           icon="el-icon-edit"
           circle
+          @click="$router.push('/publish?id=' + scope.row.id.toString())"
          ></el-button>
         <el-button
           size="mini"

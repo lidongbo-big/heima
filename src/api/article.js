@@ -39,7 +39,7 @@ export const updateArticle = (articleId, data, draft = false) => {
     method: 'PUT',
     url: `/mp/v1_0/articles/${articleId}`,
     params: {
-      draft // 是否存为草稿（true 为草稿）
+      draft
     },
     data
   })
