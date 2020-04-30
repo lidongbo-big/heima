@@ -10,20 +10,20 @@
 
         <el-row>
             <el-col :span='15'>
-              <el-form ref="form" :model="user" label-width="80px">
+              <el-form :rules="rules" ref="form" :model="user" label-width="80px">
                 <el-form-item label="编号">
                     {{user.id}}
                 </el-form-item>
                 <el-form-item label="手机">
                     {{user.mobile}}
                 </el-form-item>
-                <el-form-item label="媒体名称">
+                <el-form-item label="媒体名称" prop="name">
                     <el-input v-model="user.name"></el-input>
                 </el-form-item>
-                <el-form-item label="媒体介绍">
+                <el-form-item label="媒体介绍" prop="textarea">
                     <el-input type="textarea" v-model="user.intro"></el-input>
                 </el-form-item>
-                <el-form-item label="邮箱">
+                <el-form-item label="邮箱" prop="email">
                     <el-input v-model="user.email"></el-input>
                 </el-form-item>
 
@@ -80,7 +80,20 @@ export default {
       previewImage: '',
       cropper: null,
       udloading: false,
-      udploading: false
+      udploading: false,
+      rules: {
+        name: [
+          { required: true, message: '请输入媒体名称', trigger: 'blur' },
+          { min: 1, max: 7, message: '长度在 1 到 7 个字符', trigger: 'blur' }
+        ],
+        email: [
+          { required: true, message: '邮箱不能为空', trigger: 'blur' },
+          { pattern: /^\w+@\w+(\.\w+)+$/, message: '请输入正确的邮箱格式', trigger: 'blur' }
+        ],
+        textarea: [
+          { required: true, message: '请输入媒体介绍', trigger: 'blur' }
+        ]
+      }
     }
   },
   computed: {},
