@@ -20,7 +20,7 @@
                 <el-form-item label="媒体名称" prop="name">
                     <el-input v-model="user.name"></el-input>
                 </el-form-item>
-                <el-form-item label="媒体介绍" prop="textarea">
+                <el-form-item label="媒体介绍" prop="intro">
                     <el-input type="textarea" v-model="user.intro"></el-input>
                 </el-form-item>
                 <el-form-item label="邮箱" prop="email">
@@ -90,7 +90,7 @@ export default {
           { required: true, message: '邮箱不能为空', trigger: 'blur' },
           { pattern: /^\w+@\w+(\.\w+)+$/, message: '请输入正确的邮箱格式', trigger: 'blur' }
         ],
-        textarea: [
+        intro: [
           { required: true, message: '请输入媒体介绍', trigger: 'blur' }
         ]
       }
