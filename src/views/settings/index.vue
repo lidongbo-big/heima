@@ -11,7 +11,7 @@
         <el-row>
             <el-col :span='15'>
               <el-form :rules="rules" ref="form" :model="user" label-width="80px">
-                <el-form-item label="编号">
+                <el-form-item label="便号">
                     {{user.id}}
                 </el-form-item>
                 <el-form-item label="手机号">
