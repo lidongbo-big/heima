@@ -14,7 +14,7 @@
                 <el-form-item label="编号">
                     {{user.id}}
                 </el-form-item>
-                <el-form-item label="手机">
+                <el-form-item label="手机号">
                     {{user.mobile}}
                 </el-form-item>
                 <el-form-item label="媒体名称" prop="name">
